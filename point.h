@@ -5,39 +5,34 @@
 #ifndef UNTITLED_POINT_H
 #define UNTITLED_POINT_H
 
+#include "constants.h"
 
 class point
 {
 private:
-    double x, y;
+    int dimensions;
+    double * coords;
     int id;
 public:
     int clusterID;
-    point(int id, double x, double y) {
+    point(int id, double *& coords) {
         this->id = id;
-        this->x = x;
-        this->y = y;
         clusterID = -1;
+        this->dimensions = DIMENSIONS;
+        this->coords = new double[dimensions];
+        for (int i = 0; i <dimensions; i++)
+            this->coords[i] = coords[i];
+
     }
 
-    double getX()
+    double get(int x)
     {
-        return x;
+        return coords[x];
     }
 
-    double getY()
+    void set(int x, double a)
     {
-        return y;
-    }
-
-    void setX(double a)
-    {
-        x = a;
-    }
-
-    void setY(double a)
-    {
-        y = a;
+        coords[x] = a;
     }
 };
 

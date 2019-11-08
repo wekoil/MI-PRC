@@ -10,6 +10,7 @@
 #include "point.h"
 #include "cluster.h"
 #include <iostream>
+#include "constants.h"
 
 class graph
 {
@@ -18,9 +19,9 @@ private:
     std::vector<cluster> clusters, oldClusters;
     int counter;
 public:
-    void loadPoints(int x, int y) {
+    void loadPoints(double *& coords) {
 
-        this->points.push_back(point(counter++, x, y));
+        this->points.push_back(point(counter++, coords));
     }
 
     graph() {
@@ -53,7 +54,9 @@ public:
             std::cout << "Cluster: " << i << std::endl;
             std::vector<int>* pointIDs = clusters.at(i).getPoints();
             for (int k = 0; k < pointIDs->size(); k++)
-                std::cout << points.at(pointIDs->at(k)).getX() << " " << points.at(pointIDs->at(k)).getY() << std::endl;
+                for (int j = 0; j < DIMENSIONS; j++)
+                    std::cout << points.at(pointIDs->at(k)).get(j) << " ";
+            std::cout << std::endl;
         }
         std::cout << std::endl;
     }

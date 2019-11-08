@@ -6,6 +6,7 @@
 #define UNTITLED_CLUSTER_H
 #include <vector>
 #include "point.h"
+#include "constants.h"
 
 class cluster
 {
@@ -34,16 +35,18 @@ public:
     }
     void makeNewCentroid(std::vector<point> *points)
     {
-        double sumX = 0, sumY = 0;
+        double * sum = new double [DIMENSIONS];
+        for (int i = 0; i < DIMENSIONS; i++)
+            sum[i] = 0;
         for (int i = 0; i < pointIDs.size(); i++)
         {
-            sumX += points->at(pointIDs.at(i)).getX();
-            sumY += points->at(pointIDs.at(i)).getY();
+            for (int k = 0; k < DIMENSIONS; k++)
+                sum[k] += points->at(pointIDs.at(i)).get(k);
             if (pointIDs.at(i) != centerPoint)
                 points->at(pointIDs.at(i)).clusterID = -1;
         }
-        points->at(centerPoint).setX(sumX / pointIDs.size());
-        points->at(centerPoint).setY(sumY / pointIDs.size());
+        for (int i = 0; i < DIMENSIONS; i++)
+            points->at(centerPoint).set(i, sum[i] / pointIDs.size());
 
         while (pointIDs.size() != 1)
             pointIDs.pop_back();
