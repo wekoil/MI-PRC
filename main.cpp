@@ -6,19 +6,21 @@
 #include <cmath>
 #include "constants.h"
 #include <omp.h>
+#include <fstream>
 
 
 graph loadFile()
 {
+    std::ifstream input(INPUT);
     int k;
-    std::cin >> k;
+    input >> k;
     graph newGraph = graph();
 
     for (int i = 0; i < k; i++)
     {
         double * c = new double [DIMENSIONS];
         for (int k = 0; k < DIMENSIONS; k++)
-        std::cin >> c[k];
+            input >> c[k];
         newGraph.loadPoints(c);
     }
     return newGraph;
@@ -26,18 +28,31 @@ graph loadFile()
 
 graph randomInput()
 {
-    int k = 10000;
+    srand(time(NULL));
+    int k = POINTS;
     graph newGraph = graph();
+
+    std::ofstream myfile;
+    myfile.open ("input.txt", std::ofstream::out | std::ofstream::trunc);
+    myfile << POINTS << "\n";
 
     for (int i = 0; i < k; i++)
     {
         double * c = new double[DIMENSIONS];
 
         for (int i = 0; i < DIMENSIONS; i++)
-            c[i] = std::rand() % 200 - 100;
+        {
+            c[i] = std::rand() % 20000 - 10000;
+
+            myfile << c[i] << " ";
+        }
+
+        myfile << "\n";
 
         newGraph.loadPoints(c);
     }
+
+    myfile.close();
     return newGraph;
 }
 
@@ -85,6 +100,8 @@ double getDistanceBetweenPoints(point & from, point & to)
 void distributePointsIntoClusters(graph & g)
 {
     std::vector<point> * points = g.getPoints();
+
+#pragma omp parallel for schedule(static)
     for (int i = 0; i < points->size(); i++)
     {
         if (points->at(i).clusterID != -1)
@@ -92,24 +109,28 @@ void distributePointsIntoClusters(graph & g)
         double min = getDistanceBetweenPoints(points->at(i), points->at(g.getCenterPointOfCluster(0)));
         int minClusterID = 0;
 
-#pragma omp parallel for
-        for (int center = 0; center < 3; center++)
+
+        for (int center = 0; center < CLUSTERS; center++)
         {
             double actual = getDistanceBetweenPoints(points->at(i), points->at(g.getCenterPointOfCluster(center)));
             if (actual < min)
             {
-#pragma omp critical
+
                 if (actual < min)
                 {
                     min = actual;
                     minClusterID = center;
                 }
+
             }
         }
 
         points->at(i).clusterID = minClusterID;
-        g.getClusters()->at(minClusterID).addPoint(i);
+
     }
+
+    for (int i = 0; i < points->size(); i++)
+        g.getClusters()->at(points->at(i).clusterID).addPoint(i);
 }
 
 void kmeans(graph & g)
@@ -129,13 +150,19 @@ void kmeans(graph & g)
         }
 
     }
-    g.print();
+    g.printToFile();
 }
 
-int main() {
+int main()   {
 
-//    graph g = loadFile();
+    //graph g = loadFile();
+    clock_t begin = clock();
+
     graph g = randomInput();
     kmeans(g);
+
+    clock_t end = clock();
+    double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+    std::cout << elapsed_secs << std::endl;
     return 0;
 }

@@ -11,6 +11,7 @@
 #include "cluster.h"
 #include <iostream>
 #include "constants.h"
+#include <fstream>
 
 class graph
 {
@@ -61,9 +62,30 @@ public:
         std::cout << std::endl;
     }
 
+    void printToFile()
+    {
+        std::ofstream myfile;
+        myfile.open ("output.txt", std::ofstream::out | std::ofstream::trunc);
+
+        for (int dim = 0; dim < DIMENSIONS; dim++)
+        {
+            for (int i = 0; i < points.size(); i++)
+                myfile << points[i].get(dim) << ", ";
+            myfile << std::endl;
+        }
+
+        for (int i = 0; i < points.size(); i++)
+            myfile << points[i].clusterID << ", ";
+        myfile << std::endl;
+
+
+        myfile.close();
+    }
+
     void makeNewCentroids()
     {
         oldClusters = clusters;
+#pragma omp parallel for
         for (int i = 0; i < clusters.size(); i++)
             clusters.at(i).makeNewCentroid(&this->points);
     }

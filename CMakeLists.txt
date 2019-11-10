@@ -1,6 +1,8 @@
-cmake_minimum_required(VERSION 3.13)
-project(mi_prc)
+cmake_minimum_required(VERSION 3.6)
+project(mi-prc)
 
-set(CMAKE_CXX_STANDARD 17)
+# added -fopenmp
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-add_executable(mi_prc main.cpp)
+set(SOURCE_FILES main.cpp)
+add_executable(openmp_test_clion ${SOURCE_FILES})
