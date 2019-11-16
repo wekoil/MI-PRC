@@ -1,0 +1,1 @@
+nvcc -Xptxas -O2,-v -use_fast_math cuda_michaj24.cu
