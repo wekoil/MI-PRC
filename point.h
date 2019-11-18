@@ -7,32 +7,47 @@
 
 #include "constants.h"
 
-class point
+struct point
 {
-private:
     int dimensions;
-    double * coords;
+    double coordx, coordy;
     int id;
-public:
     int clusterID;
+
     point(int id, double *& coords) {
         this->id = id;
         clusterID = -1;
         this->dimensions = DIMENSIONS;
-        this->coords = new double[dimensions];
-        for (int i = 0; i <dimensions; i++)
-            this->coords[i] = coords[i];
+        coordx = coords[0];
+        coordy = coords[1];
+
+    }
+
+    point(double x,double y) {
+        coordx = x;
+        coordy = y;
 
     }
 
     double get(int x)
     {
-        return coords[x];
+        if (x==0)
+            return coordx;
+        return coordy;
     }
 
     void set(int x, double a)
     {
-        coords[x] = a;
+        if (x==0)
+            coordx = a;
+        else
+            coordy = a;
+    }
+
+    void set(double a, double b)
+    {
+        coordx = a;
+        coordy = b;
     }
 };
 
