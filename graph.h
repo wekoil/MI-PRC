@@ -12,6 +12,8 @@
 #include <iostream>
 #include "constants.h"
 #include <fstream>
+#include <cstring>
+#include <string>
 
 class graph
 {
@@ -65,7 +67,9 @@ public:
     void printToFile()
     {
         std::ofstream myfile;
-        myfile.open ("output.txt", std::ofstream::out | std::ofstream::trunc);
+        
+        // myfile.open ("output.txt", std::ofstream::out | std::ofstream::trunc);
+        myfile.open (OUTPUT, std::ios_base::app);
 
         for (int dim = 0; dim < DIMENSIONS; dim++)
         {
@@ -77,6 +81,16 @@ public:
         for (int i = 0; i < points.size(); i++)
             myfile << points[i].clusterID << ", ";
         myfile << std::endl;
+
+
+        myfile.close();
+    }
+
+    void wipeFile()
+    {
+        std::ofstream myfile;
+        
+        myfile.open (OUTPUT, std::ofstream::out | std::ofstream::trunc);
 
 
         myfile.close();
