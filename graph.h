@@ -99,7 +99,7 @@ public:
     void makeNewCentroids()
     {
         oldClusters = clusters;
-#pragma omp parallel for
+// #pragma omp parallel for
         for (int i = 0; i < clusters.size(); i++)
             clusters.at(i).makeNewCentroid(&this->points);
     }

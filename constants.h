@@ -8,7 +8,8 @@
 const int CLUSTERS = 3;
 const int ITERATIONS = 100;
 const int DIMENSIONS = 2;
-const int POINTS = 1000;
+const int POINTS = 1000000;
+const int GRIDSIZE = 1000;
 const char * INPUT = "input.txt";
 const char * OUTPUT = "output.txt";
 
