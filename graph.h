@@ -22,7 +22,7 @@ private:
     std::vector<cluster> clusters, oldClusters;
     int counter;
 public:
-    void loadPoints(double *& coords) {
+    void loadPoints(float *& coords) {
 
         this->points.push_back(point(counter++, coords));
     }

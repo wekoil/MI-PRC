@@ -29,7 +29,7 @@ graph loadFile()
 
     for (int i = 0; i < k; i++)
     {
-        double * c = new double [DIMENSIONS];
+        float * c = new float [DIMENSIONS];
         for (int k = 0; k < DIMENSIONS; k++)
             input >> c[k];
         newGraph.loadPoints(c);
@@ -49,7 +49,7 @@ graph randomInput()
 
     for (int i = 0; i < k; i++)
     {
-        double * c = new double[DIMENSIONS];
+        float * c = new float[DIMENSIONS];
 
         for (int i = 0; i < DIMENSIONS; i++)
         {
@@ -103,9 +103,9 @@ void initClusters(graph & g, point *& centroids)
 
 }
 
-double getDistanceBetweenPoints(point & from, point & to)
+float getDistanceBetweenPoints(point & from, point & to)
 {
-    double sum = 0;
+    float sum = 0;
     for (int i = 0; i < DIMENSIONS; i++)
         sum += pow((from.get(i) - to.get(i)),2);
     return sqrt(sum);
@@ -120,13 +120,13 @@ void distributePointsIntoClusters(graph & g)
     {
         if (points->at(i).clusterID != -1)
             continue;
-        double min = getDistanceBetweenPoints(points->at(i), points->at(g.getCenterPointOfCluster(0)));
+        float min = getDistanceBetweenPoints(points->at(i), points->at(g.getCenterPointOfCluster(0)));
         int minClusterID = 0;
 
 
         for (int center = 0; center < CLUSTERS; center++)
         {
-            double actual = getDistanceBetweenPoints(points->at(i), points->at(g.getCenterPointOfCluster(center)));
+            float actual = getDistanceBetweenPoints(points->at(i), points->at(g.getCenterPointOfCluster(center)));
             if (actual < min)
             {
 
@@ -147,16 +147,16 @@ void distributePointsIntoClusters(graph & g)
         g.getClusters()->at(points->at(i).clusterID).addPoint(i);
 }
 
-__device__ double getDistanceBetweenPointsCUDA(point & from, point & to)
+__device__ float getDistanceBetweenPointsCUDA(point & from, point & to)
 {
-    double sum = 0;
+    float sum = 0;
     // for (int i = 0; i < DIMENSIONS; i++)
         sum += pow((from.coordx - to.coordx),2);
         sum += pow((from.coordy - to.coordy),2);
     return sqrt(sum);
 }
 
-__global__ void computeGPU(point * points, point * centroids, double * sumX, double * sumY, int * count)
+__global__ void computeGPU(point * points, point * centroids, float * sumX, float * sumY, int * count)
 {
     int index = blockIdx.x * blockDim.x + threadIdx.x;
     int stride = blockDim.x * gridDim.x;
@@ -165,7 +165,7 @@ __global__ void computeGPU(point * points, point * centroids, double * sumX, dou
     // #pragma unroll 4
 	for (int i = index; i < POINTS; i += stride)
     {
-        double min = getDistanceBetweenPointsCUDA(points[i], centroids[0]);
+        float min = getDistanceBetweenPointsCUDA(points[i], centroids[0]);
         int minClusterID = 0;
 
         // printf("%lf %lf\t", points[i].coordx, points[i].coordy);
@@ -175,7 +175,7 @@ __global__ void computeGPU(point * points, point * centroids, double * sumX, dou
 
         for (int center = 1; center < CLUSTERS; center++)
         {
-            double actual = getDistanceBetweenPointsCUDA(points[i], centroids[center]);
+            float actual = getDistanceBetweenPointsCUDA(points[i], centroids[center]);
             // printf("%lf ", actual);
             if (actual < min)
             {
@@ -195,13 +195,13 @@ __global__ void computeGPU(point * points, point * centroids, double * sumX, dou
 
 } 
 
-__global__ void computeNewCentroidsGPU(point * points, point * centroids, double * sumX, double * sumY, int * count)
+__global__ void computeNewCentroidsGPU(point * points, point * centroids, float * sumX, float * sumY, int * count)
 {
     int center = threadIdx.x;
     // int stride = blockDim.x * gridDim.x;
 
     // distribute into points to clusters
-    #pragma unroll 4
+    // #pragma unroll 4
     for (int i = 0; i < POINTS; i++)
     {
 
@@ -246,7 +246,7 @@ void kmeans(graph & g)
 
 void cudaKmeans(graph & g)
 {
-    
+    clock_t beginInit = clock();
 
     point * cudaPoints, *cudaCentroids;
 
@@ -265,23 +265,38 @@ void cudaKmeans(graph & g)
     //     std::cout << centroids[i].coordx << "\t" << centroids[i].coordy << std::endl;
     // }
 
+    float * cudaSumX, *cudaSumY;
+    int * cudaCount;
+
+    clock_t totalInit = clock() - beginInit;
+
+    clock_t beginMalloc = clock();
+
     HANDLE_ERROR(cudaMalloc(&cudaPoints, POINTS * sizeof(struct point)));
     HANDLE_ERROR(cudaMalloc(&cudaCentroids, CLUSTERS * sizeof(struct point)));
+    HANDLE_ERROR(cudaMalloc(&cudaSumX, CLUSTERS * sizeof(float)));
+    HANDLE_ERROR(cudaMalloc(&cudaSumY, CLUSTERS * sizeof(float)));
+    HANDLE_ERROR(cudaMalloc(&cudaCount, CLUSTERS * sizeof(int)));
+
+    clock_t totalMalloc = clock() - beginMalloc;
+
+    clock_t beginCopy = clock();
 
     
     HANDLE_ERROR(cudaMemcpy(cudaPoints, points, POINTS * sizeof(point), cudaMemcpyHostToDevice));
 
-    double * cudaSumX, *cudaSumY;
-    int * cudaCount;
+    clock_t totalCopy = clock() - beginCopy;
 
-    HANDLE_ERROR(cudaMalloc(&cudaSumX, CLUSTERS * sizeof(double)));
-    HANDLE_ERROR(cudaMalloc(&cudaSumY, CLUSTERS * sizeof(double)));
-    HANDLE_ERROR(cudaMalloc(&cudaCount, CLUSTERS * sizeof(int)));
+    clock_t totalCudaCompute = 0;
+    
+    clock_t totalCentroids = 0;
 
     int iter = 0;
     do
     {
-        double sumX[CLUSTERS], sumY[CLUSTERS];
+        beginInit = clock();
+
+        float sumX[CLUSTERS], sumY[CLUSTERS];
         int count[CLUSTERS];
 
         for (int i = 0; i < CLUSTERS; i++)
@@ -290,23 +305,34 @@ void cudaKmeans(graph & g)
             sumY[i] = 0.0;
             count[i] = 0;
         }
+
+        totalInit += clock() - beginInit;
+
+        beginCopy = clock();
+
         HANDLE_ERROR(cudaMemcpy(cudaCentroids, centroids, CLUSTERS * sizeof(point), cudaMemcpyHostToDevice));
         
 
-        HANDLE_ERROR(cudaMemcpy(cudaSumX, sumX,  CLUSTERS * sizeof(double), cudaMemcpyHostToDevice));
-        HANDLE_ERROR(cudaMemcpy(cudaSumY, sumY,  CLUSTERS * sizeof(double), cudaMemcpyHostToDevice));
+        HANDLE_ERROR(cudaMemcpy(cudaSumX, sumX,  CLUSTERS * sizeof(float), cudaMemcpyHostToDevice));
+        HANDLE_ERROR(cudaMemcpy(cudaSumY, sumY,  CLUSTERS * sizeof(float), cudaMemcpyHostToDevice));
         HANDLE_ERROR(cudaMemcpy(cudaCount, count, CLUSTERS * sizeof(int), cudaMemcpyHostToDevice));
 
-        int blockSizeX = 128;//4*gsizex;
+        totalCopy += clock() - beginCopy;
+
+        clock_t cudeCompute = clock();
+
+        int blockSizeX = 32;//4*gsizex;
         int numBlocksX = (POINTS + blockSizeX - 1) / blockSizeX;
 
         computeGPU<<<numBlocksX, blockSizeX>>>((point*)cudaPoints, (point*)cudaCentroids, cudaSumX, cudaSumY, cudaCount);
-        cudaDeviceSynchronize();
+        // cudaDeviceSynchronize();
 
 
         computeNewCentroidsGPU<<<1, CLUSTERS>>>((point*)cudaPoints, (point*)cudaCentroids, cudaSumX, cudaSumY, cudaCount);
 
         cudaDeviceSynchronize();
+
+        totalCudaCompute += clock() - cudeCompute;
 
         // HANDLE_ERROR(cudaMemcpy(points, cudaPoints, POINTS * sizeof(point), cudaMemcpyDeviceToHost));
 
@@ -314,13 +340,19 @@ void cudaKmeans(graph & g)
         //     g.getPoints()->at(i) = points[i];
         // g.printToFile();
 
-        HANDLE_ERROR(cudaMemcpy(sumX, cudaSumX, CLUSTERS * sizeof(double), cudaMemcpyDeviceToHost));
-        HANDLE_ERROR(cudaMemcpy(sumY, cudaSumY, CLUSTERS * sizeof(double), cudaMemcpyDeviceToHost));
+        beginCopy = clock();
+
+        HANDLE_ERROR(cudaMemcpy(sumX, cudaSumX, CLUSTERS * sizeof(float), cudaMemcpyDeviceToHost));
+        HANDLE_ERROR(cudaMemcpy(sumY, cudaSumY, CLUSTERS * sizeof(float), cudaMemcpyDeviceToHost));
         HANDLE_ERROR(cudaMemcpy(count, cudaCount, CLUSTERS * sizeof(int), cudaMemcpyDeviceToHost));
+
+        totalCopy += clock() - beginCopy;
 
         // std::cout << sumX[0] << std::endl;
 
         // HANDLE_ERROR(cudaMemcpy(centroids, cudaCentroids, CLUSTERS * sizeof(point), cudaMemcpyDeviceToHost));
+
+        clock_t beginCentroids = clock();
 
         bool flag = true;
         for (int i = 0; i < CLUSTERS; i++)
@@ -333,6 +365,8 @@ void cudaKmeans(graph & g)
             // std::cout << centroids[i].coordx << "\t" << centroids[i].coordy << std::endl;
         }
         // std::cout << "\n\n";
+
+        totalCentroids += clock() - beginCentroids;
         
         if (flag)
         {
@@ -343,6 +377,14 @@ void cudaKmeans(graph & g)
 
 
     } while (iter++ < ITERATIONS);
+
+    // cudaKmeans(g);
+
+    std::cout << "cuda init: " << totalInit / CLOCKS_PER_SEC << std::endl;
+    std::cout << "cuda malloc: " << totalMalloc / CLOCKS_PER_SEC << std::endl;
+    std::cout << "cuda copy: " << totalCopy / CLOCKS_PER_SEC << std::endl;
+    std::cout << "cuda computing: " << totalCudaCompute / CLOCKS_PER_SEC << std::endl;
+    std::cout << "cpu centroids conmputing: " << totalCentroids / CLOCKS_PER_SEC << std::endl;
 
     
     free(points);
@@ -364,14 +406,14 @@ int main()   {
     cudaKmeans(g);
     clock_t end = clock();
 
-    double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
-    std::cout << "cuda: " << elapsed_secs << std::endl;
+    float elapsed_secs = float(end - begin) / CLOCKS_PER_SEC;
+    std::cout << "cuda total: " << elapsed_secs << std::endl;
 
     begin = clock();
     kmeans(g);
     end = clock();
 
-    elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+    elapsed_secs = float(end - begin) / CLOCKS_PER_SEC;
     std::cout << "cpu: " << elapsed_secs << std::endl;
 
 

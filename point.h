@@ -10,11 +10,11 @@
 struct point
 {
     int dimensions;
-    double coordx, coordy;
+    float coordx, coordy;
     int id;
     int clusterID;
 
-    point(int id, double *& coords) {
+    point(int id, float *& coords) {
         this->id = id;
         clusterID = -1;
         this->dimensions = DIMENSIONS;
@@ -23,20 +23,20 @@ struct point
 
     }
 
-    point(double x,double y) {
+    point(float x,float y) {
         coordx = x;
         coordy = y;
 
     }
 
-    double get(int x)
+    float get(int x)
     {
         if (x==0)
             return coordx;
         return coordy;
     }
 
-    void set(int x, double a)
+    void set(int x, float a)
     {
         if (x==0)
             coordx = a;
@@ -44,7 +44,7 @@ struct point
             coordy = a;
     }
 
-    void set(double a, double b)
+    void set(float a, float b)
     {
         coordx = a;
         coordy = b;

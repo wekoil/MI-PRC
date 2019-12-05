@@ -35,7 +35,7 @@ public:
     }
     void makeNewCentroid(std::vector<point> *points)
     {
-        double * sum = new double [DIMENSIONS];
+        float * sum = new float [DIMENSIONS];
         for (int i = 0; i < DIMENSIONS; i++)
             sum[i] = 0;
         for (int i = 0; i < pointIDs.size(); i++)
