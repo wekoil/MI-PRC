@@ -1,0 +1,1 @@
+nvcc -use_fast_math main.cu
