@@ -262,7 +262,8 @@ void cudaKmeans(graph & g)
     point * centroids = (point *)malloc(CLUSTERS * sizeof(point));
 
     initClusters(g, centroids);
-    g.wipeFile();
+    if (CUDA_PRINT)
+        g.wipeFile();
 
     for (int i = 0; i < POINTS; i++)
     	points[i] = g.getPoints()->at(i);
@@ -348,11 +349,16 @@ void cudaKmeans(graph & g)
 
         totalCudaCompute += clock() - cudeCompute;
 
-        // HANDLE_ERROR(cudaMemcpy(points, cudaPoints, POINTS * sizeof(point), cudaMemcpyDeviceToHost));
+        if (CUDA_PRINT)
+        {
+            HANDLE_ERROR(cudaMemcpy(points, cudaPoints, POINTS * sizeof(point), cudaMemcpyDeviceToHost));
 
-        // for (int i = 0; i < POINTS; i++)
-        //     g.getPoints()->at(i) = points[i];
-        // g.printToFile();
+            for (int i = 0; i < POINTS; i++)
+                g.getPoints()->at(i) = points[i];
+            g.printToFile();
+        }
+
+        
 
         beginCopy = clock();
 
