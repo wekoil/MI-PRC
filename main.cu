@@ -155,7 +155,7 @@ __device__ float getDistanceBetweenPointsCUDA(point & from, point & to)
     return sqrt(sum);
 }
 
-__global__ void computeGPU(point * points, point * centroids)
+__global__ void computeGPU(point * points, point * centroids, float * sum, int * count)
 {
     int index = blockIdx.x * blockDim.x + threadIdx.x;
     int stride = blockDim.x * gridDim.x;
@@ -189,6 +189,10 @@ __global__ void computeGPU(point * points, point * centroids)
         // printf("\n");
 
         points[i].clusterID = minClusterID;
+
+        for (int dim = 0; dim < DIMENSIONS; dim++)
+            atomicAdd(&sum[minClusterID * DIMENSIONS + dim], points[i].coords[dim]);
+        atomicAdd(&count[minClusterID], 1);
 
     }
 
@@ -318,14 +322,14 @@ void cudaKmeans(graph & g)
 
         clock_t cudeCompute = clock();
 
-        int blockSizeX = 32;//4*gsizex;
+        int blockSizeX = 128;//4*gsizex;
         int numBlocksX = (POINTS + blockSizeX - 1) / blockSizeX;
 
-        computeGPU<<<numBlocksX, blockSizeX>>>((point*)cudaPoints, (point*)cudaCentroids);
+        computeGPU<<<numBlocksX, blockSizeX>>>((point*)cudaPoints, (point*)cudaCentroids, cudaSum, cudaCount);
         // cudaDeviceSynchronize();
 
 
-        computeNewCentroidsGPU<<<1, CLUSTERS>>>((point*)cudaPoints, (point*)cudaCentroids, cudaSum, cudaCount);
+        // computeNewCentroidsGPU<<<1, CLUSTERS>>>((point*)cudaPoints, (point*)cudaCentroids, cudaSum, cudaCount);
 
         cudaDeviceSynchronize();
 
