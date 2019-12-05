@@ -10,44 +10,45 @@
 struct point
 {
     int dimensions;
-    float coordx, coordy;
+    float coords[DIMENSIONS];
     int id;
     int clusterID;
 
-    point(int id, float *& coords) {
+    point(int id, float *& a)
+    {
         this->id = id;
         clusterID = -1;
         this->dimensions = DIMENSIONS;
-        coordx = coords[0];
-        coordy = coords[1];
-
+        for (int i = 0; i < DIMENSIONS; i++)
+            this->coords[i] = a[i];
     }
 
-    point(float x,float y) {
-        coordx = x;
-        coordy = y;
-
+    point(float * a)
+    {
+        this->dimensions = DIMENSIONS;
+        for (int i = 0; i < DIMENSIONS; i++)
+            this->coords[i] = a[i];
     }
 
     float get(int x)
     {
-        if (x==0)
-            return coordx;
-        return coordy;
+        return coords[x];
+    }
+
+    float* get()
+    {
+        return coords;
     }
 
     void set(int x, float a)
     {
-        if (x==0)
-            coordx = a;
-        else
-            coordy = a;
+        coords[x] = a;
     }
 
-    void set(float a, float b)
+    void set(float *& a)
     {
-        coordx = a;
-        coordy = b;
+        for (int i = 0; i < DIMENSIONS; i++)
+            this->coords[i] = a[i];
     }
 };
 
