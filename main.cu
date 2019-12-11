@@ -428,7 +428,18 @@ void cudaKmeans(graph & g)
     cudaFree(cudaChanges);
 }
 
-int main()   {
+void parseArguments(int argc, char ** argv)
+{
+    if (argc == 1)
+        return;
+    CLUSTERS = atoi(argv[1]);
+    ITERATIONS = atoi(argv[2]);
+
+}
+
+int main(int argc, char ** argv) 
+{
+    parseArguments(argc, argv);
 
     //graph g = loadFile();
 
