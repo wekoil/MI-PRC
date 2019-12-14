@@ -23,8 +23,10 @@ private:
     int counter;
 public:
     void loadPoints(float *& coords) {
-
-        this->points.push_back(point(counter++, coords));
+        point x;
+        x.alocate();
+        x.set(coords);
+        this->points.push_back(x);
     }
 
     graph() {
@@ -62,6 +64,28 @@ public:
             std::cout << std::endl;
         }
         std::cout << std::endl;
+    }
+
+    void printToFile(int * ids, float * coords)
+    {
+        std::ofstream myfile;
+        
+        // myfile.open ("output.txt", std::ofstream::out | std::ofstream::trunc);
+        myfile.open (OUTPUT, std::ios_base::app);
+
+        for (int dim = 0; dim < DIMENSIONS; dim++)
+        {
+            for (int i = 0; i < points.size(); i++)
+                myfile << coords[dim * DIMENSIONS + i] << ", ";
+            myfile << std::endl;
+        }
+
+        for (int i = 0; i < points.size(); i++)
+            myfile << ids[i] << ", ";
+        myfile << std::endl;
+
+
+        myfile.close();
     }
 
     void printToFile()

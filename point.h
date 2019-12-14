@@ -9,25 +9,19 @@
 
 struct point
 {
-    int dimensions;
-    float coords[DIMENSIONS];
+    float * coords;
     int id;
     int clusterID;
 
-    point(int id, float *& a)
+    void alocate()
     {
-        this->id = id;
+        coords = new float[DIMENSIONS];
         clusterID = -1;
-        this->dimensions = DIMENSIONS;
-        for (int i = 0; i < DIMENSIONS; i++)
-            this->coords[i] = a[i];
     }
 
-    point(float * a)
+    void dealocate()
     {
-        this->dimensions = DIMENSIONS;
-        for (int i = 0; i < DIMENSIONS; i++)
-            this->coords[i] = a[i];
+        delete [] coords;
     }
 
     float get(int x)
@@ -45,7 +39,7 @@ struct point
         coords[x] = a;
     }
 
-    void set(float *& a)
+    void set(float * a)
     {
         for (int i = 0; i < DIMENSIONS; i++)
             this->coords[i] = a[i];

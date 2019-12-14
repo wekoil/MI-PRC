@@ -5,10 +5,10 @@
 #ifndef UNTITLED_CONSTANTS_H
 #define UNTITLED_CONSTANTS_H
 
-const int CLUSTERS = 3;
-const int ITERATIONS = 100;
-const int DIMENSIONS = 2;
-const int POINTS = 100000;
+int CLUSTERS = 3;
+int ITERATIONS = 100;
+int DIMENSIONS = 2;
+int POINTS;
 const int GRIDSIZE = 1000;
 
 // const bool POINT_TRESHOLD = true;
