@@ -4,6 +4,9 @@
 #include <climits>
 #include <cmath>
 #include "constants.h"
+#include "point.h"
+#include "cluster.h"
+#include "graph.h"
 #include <omp.h>
 #include <fstream>
 #include <cuda_runtime_api.h>
@@ -326,8 +329,8 @@ void cudaKmeans(graph & g)
 
         if (float(changes[0]) / float(POINTS) < ITER_TRESHOLD)
         {
-            std::cout << "iter: " << iter << std::endl;
-            break;
+            std::cout << "treshold iter: " << iter << std::endl;
+            // break;
         }
 
         changes[0] = 0;
@@ -348,11 +351,11 @@ void cudaKmeans(graph & g)
         // std::cout << "\n\n";
 
         
-        // if (flag)
-        // {
-        //     std::cout << "iter: " << iter << std::endl;
-        //     break;
-        // }
+        if (flag)
+        {
+            std::cout << "iter: " << iter << std::endl;
+            break;
+        }
 
 
 
