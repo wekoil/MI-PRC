@@ -11,10 +11,11 @@ int DIMENSIONS = 2;
 int POINTS;
 const int GRIDSIZE = 1000;
 
-// const bool POINT_TRESHOLD = true;
+const bool POINT_TRESHOLD = true;
 const float ITER_TRESHOLD = 0.001;
 
-const bool CUDA_PRINT = false;
+const bool CUDA_PRINT = true;
+const bool CPU_PRINT = false;
 const char * INPUT = "input.txt";
 const char * OUTPUT = "output.txt";
 

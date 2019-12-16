@@ -76,7 +76,7 @@ public:
         for (int dim = 0; dim < DIMENSIONS; dim++)
         {
             for (int i = 0; i < points.size(); i++)
-                myfile << coords[dim * DIMENSIONS + i] << ", ";
+                myfile << coords[i * DIMENSIONS + dim] << ", ";
             myfile << std::endl;
         }
 

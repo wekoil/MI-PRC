@@ -189,9 +189,14 @@ __global__ void computeGPU(int POINTS, int CLUSTERS, int DIMENSIONS, int * ids, 
         int minClusterID = 0;
 
 
+        // printf("x: %f, y: %f\n", coords[i * DIMENSIONS ], coords[i * DIMENSIONS + 1]);
+        // printf("bod: %d, vzdalenost: %f od %f %f\n", i, min, centroids[0], centroids[1]);
+
+
         for (int center = 1; center < CLUSTERS; center++)
         {
             float actual = getDistanceBetweenPointsCUDA(coords, centroids, i, center, DIMENSIONS);
+            // printf("vzdalenost: %f od %f %f\n", actual, centroids[center * DIMENSIONS], centroids[center * DIMENSIONS + 1]);
             if (actual < min)
             {
                 min = actual;
@@ -199,6 +204,7 @@ __global__ void computeGPU(int POINTS, int CLUSTERS, int DIMENSIONS, int * ids, 
             }
             
         }
+        
 
 
         if (ids[i] != minClusterID)
@@ -206,6 +212,8 @@ __global__ void computeGPU(int POINTS, int CLUSTERS, int DIMENSIONS, int * ids, 
             atomicAdd(&changes[0], 1);
             ids[i] = minClusterID;
         }
+
+        // printf("%d\n",ids[i]);
             
 
         for (int dim = 0; dim < DIMENSIONS; dim++)
@@ -219,13 +227,24 @@ __global__ void computeGPU(int POINTS, int CLUSTERS, int DIMENSIONS, int * ids, 
 void kmeans(graph & g)
 {
     float * centroids = new float[DIMENSIONS * CLUSTERS];
+
+    if (CPU_PRINT)
+        g.wipeFile();
+
     initClusters(g, centroids);
     distributePointsIntoClusters(g);
 
+    if (CPU_PRINT)
+        g.printToFile();
+
     for (int i = 0; i < ITERATIONS; i++)
     {
+        
         g.makeNewCentroids();
         distributePointsIntoClusters(g);
+
+        if (CPU_PRINT)
+            g.printToFile();
 
         if (g.isSameAsOld())
         {
@@ -235,6 +254,11 @@ void kmeans(graph & g)
         // g.printToFile();
     }
     
+}
+
+bool isSameFloat(float a, float b)
+{
+    return (fabs(a * 0.99999) <= fabs(b) && fabs(a * 1.00001) >= fabs(b));
 }
 
 void cudaKmeans(graph & g)
@@ -312,10 +336,11 @@ void cudaKmeans(graph & g)
         if (CUDA_PRINT)
         {
             HANDLE_ERROR(cudaMemcpy(pointsIDs, cudaPointsIDs, POINTS * sizeof(int), cudaMemcpyDeviceToHost));
-            HANDLE_ERROR(cudaMemcpy(pointsCoords, cudaPointsCoords, DIMENSIONS * POINTS * sizeof(float), cudaMemcpyDeviceToHost));
+            // HANDLE_ERROR(cudaMemcpy(pointsCoords, cudaPointsCoords, DIMENSIONS * POINTS * sizeof(float), cudaMemcpyDeviceToHost));
 
             // for (int i = 0; i < POINTS; i++)
-            //     g.getPoints()->at(i) = points[i];
+            //     g.getPoints()->at(i).id = pointsIDs[i];
+            // g.printToFile();
             g.printToFile(pointsIDs, pointsCoords);
         }
 
@@ -327,10 +352,10 @@ void cudaKmeans(graph & g)
 
         // std::cout << "changes: " << changes[0] << " points: " << POINTS << " treshold: " << ITER_TRESHOLD << std::endl;
 
-        if (float(changes[0]) / float(POINTS) < ITER_TRESHOLD)
+        if (POINT_TRESHOLD && float(changes[0]) / float(POINTS) < ITER_TRESHOLD)
         {
             std::cout << "treshold iter: " << iter << std::endl;
-            // break;
+            break;
         }
 
         changes[0] = 0;
@@ -341,10 +366,12 @@ void cudaKmeans(graph & g)
         {
             for (int dim = 0; dim < DIMENSIONS; dim++)
             {
-                if (flag && centroids[i * DIMENSIONS + dim] != sum[i * DIMENSIONS + dim]/count[i])
+                if (flag && !isSameFloat(centroids[i * DIMENSIONS + dim], sum[i * DIMENSIONS + dim]/count[i]))
                     flag = false;
                 centroids[i * DIMENSIONS + dim] = (sum[i * DIMENSIONS + dim]/count[i]);
+                // std::cout << centroids[i * DIMENSIONS + dim] << '\t';
             }
+            // std::cout << std::endl;
             // std::cout << sumX[i] << "\t" << sumY[i] << "\t" << count[i] << std::endl;
             // std::cout << centroids[i].coordx << "\t" << centroids[i].coordy << std::endl;
         }
