@@ -78,6 +78,28 @@ Vše měřené na Tesla K40c
 
 ### Vše doplnit výpisem hodnot z profileru včetně komentáře.
 
+iter: 54
+cuda total: 0.44
+cpu: 0
+==22805== Profiling application: ./a.out
+==22805== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   98.33%  31.254ms        55  568.26us  565.03us  613.19us  computeGPU(int, int, int, int*, float*, float*, float*, int*, int*)
+                    0.99%  314.24us       222  1.4150us     864ns  77.664us  [CUDA memcpy HtoD]
+                    0.68%  216.35us       165  1.3110us  1.2800us  2.3040us  [CUDA memcpy DtoH]
+      API calls:   91.61%  474.84ms         6  79.141ms  8.7070us  474.27ms  cudaMalloc
+                    6.08%  31.510ms        55  572.91us  568.78us  615.89us  cudaDeviceSynchronize
+                    1.33%  6.8904ms       387  17.804us  10.505us  385.53us  cudaMemcpy
+                    0.46%  2.3678ms       288  8.2210us     284ns  491.63us  cuDeviceGetAttribute
+                    0.26%  1.3633ms        55  24.787us  19.049us  252.63us  cudaLaunchKernel
+                    0.11%  577.86us         3  192.62us  94.012us  362.61us  cuDeviceTotalMem
+                    0.10%  526.32us         6  87.720us  3.4740us  263.94us  cudaFree
+                    0.04%  215.29us         3  71.763us  60.780us  93.243us  cuDeviceGetName
+                    0.00%  15.504us         3  5.1680us  3.1030us  8.7980us  cuDeviceGetPCIBusId
+                    0.00%  6.5230us         6  1.0870us     343ns  2.3090us  cuDeviceGet
+                    0.00%  2.9690us         3     989ns     327ns  1.7290us  cuDeviceGetCount
+                    0.00%  1.2960us         3     432ns     358ns     510ns  cuDeviceGetUuid
+
 ### Analýza a hodnocení vlastností dané implementace programu.
 
 ## Kapitola 3
