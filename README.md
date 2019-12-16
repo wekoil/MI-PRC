@@ -78,6 +78,7 @@ Vše měřené na Tesla K40c
 
 ### Vše doplnit výpisem hodnot z profileru včetně komentáře.
 
+<pre>
 iter: 54
 cuda total: 0.44
 cpu: 0
@@ -99,6 +100,7 @@ cpu: 0
                     0.00%  6.5230us         6  1.0870us     343ns  2.3090us  cuDeviceGet
                     0.00%  2.9690us         3     989ns     327ns  1.7290us  cuDeviceGetCount
                     0.00%  1.2960us         3     432ns     358ns     510ns  cuDeviceGetUuid
+</pre>
 
 ### Analýza a hodnocení vlastností dané implementace programu.
 
