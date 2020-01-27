@@ -429,7 +429,7 @@ int main(int argc, char ** argv)
     std::cout << "cuda total: " << elapsed_secs << std::endl;
 
     begin = clock();
-    //kmeans(g);
+    kmeans(g);
     end = clock();
 
     elapsed_secs = float(end - begin) / CLOCKS_PER_SEC;
